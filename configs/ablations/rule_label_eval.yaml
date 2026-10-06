@@ -1,0 +1,3 @@
+_base_: ../default.yaml
+experiment: {name: ablation_rule_label_eval}
+eval: {labels: rule}

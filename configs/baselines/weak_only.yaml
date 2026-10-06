@@ -1,0 +1,7 @@
+# Weak-only (Snorkel-style): label model over the LFs WITHOUT anchors (sign by the alpha > 1/2 assumption), consistency
+# training on its posterior; gate and trade gradient off.
+_base_: ../default.yaml
+experiment: {name: baseline_weak_only}
+semi: {use_anchors: false, teacher: labelmodel, use_conformal: false, use_trade_loss: false}
+eval: {policy: false}
+model: {ablation: {two_stage: true}}

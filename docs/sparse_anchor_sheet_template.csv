@@ -1,0 +1,3 @@
+case_id,source,ticker,anomaly_class,onset_date,end_date,peak_date,release_date,date_resolution,url,verifier,second_verifier,notes
+CSRC-EXAMPLE-0001,CSRC,600000,pump_dump,2019-03-04,2019-05-20,,2021-07-09,day,http://www.csrc.gov.cn/...,AB,CD,"EXAMPLE ROW: replace; 连续买卖 / 拉抬 per decision text"
+SEC-LR-EXAMPLE,SEC,ABCD,pump_dump,2019-03-01,2019-07-31,,2022-02-15,month,https://www.sec.gov/litigation/litreleases/...,AB,,"EXAMPLE ROW: month-resolution complaint window"

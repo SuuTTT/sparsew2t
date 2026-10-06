@@ -1,0 +1,7 @@
+# FixMatch (Sohn et al., NeurIPS 2020) on event windows: the model is its own teacher (no labelling functions, no label
+# model, no gate, no outcome weights), fixed threshold 0.95, labelled set = anchors + confident normals.
+_base_: ../default.yaml
+experiment: {name: baseline_fixmatch_fin}
+semi: {teacher: model, use_label_model: false, use_conformal: false, dynamic_threshold: false, tau: 0.95, use_ssl: false, use_outcome_weights: false, use_trade_loss: false}
+eval: {score: logit, policy: false}
+model: {ablation: {two_stage: true}}

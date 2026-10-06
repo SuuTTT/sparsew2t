@@ -1,0 +1,4 @@
+# Valid BH-conformal gate (Proposition 2): expected to be conservative / powerless at low prevalence.
+_base_: ../default.yaml
+experiment: {name: ablation_conformal_gate}
+semi: {use_conformal: true, gate_score: labelmodel, cal_trim_tau: null}

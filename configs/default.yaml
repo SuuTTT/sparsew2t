@@ -1,0 +1,148 @@
+# SparseWarn2Trade (label-scarcity track) default experiment. Overridable from the CLI: a.b.c=value.
+# Dataset-specific keys come from an overlay passed with --dataset-config (configs/datasets/{sec_litigation,csrc_sanctions}.yaml).
+experiment:
+  name: sparsewarn2trade_synthetic
+  out_dir: runs
+  device: auto                   # auto | cpu | cuda
+
+seeds: [42, 2024, 2025, 2026]    # training seeds; the CASE draw is controlled by label_budget.budget_seed
+
+label_budget:
+  k_values: [1, 2, 3, 5, 10, null]   # cases per class, nested; null = every case available under the protocol
+  protocols: [release]           # release (realistic) | naive (leaky, for the audit) | oracle (ceiling only, labelled as such)
+  budget_seed: 7                 # which cases are drawn; identical for every method of a sweep
+  n_neg_per_pos: 20              # confident normals per labelled positive bar
+  min_neg: 50
+  neg_margin: 20                 # bars of separation from any SAMPLED anchor / LF positive
+  lead: 3                        # warning window starts `lead` bars before the conduct onset
+  n_cal: 0.1                     # held-out calibration rows (fraction of the unlabelled pool if < 1); never trained on.
+                                 # BH can select only if >= m / (q (n + 1)) rows beat every calibration score
+  cal_block: 10                  # at most one calibration row per asset x cal_block bars (caps n_cal at 1/cal_block)
+
+dataset:
+  name: synthetic
+  T: 3000
+  N: 16
+  seed: 0
+  event_rate: 0.004
+  lead: 3
+  anchors:
+    path: null                   # CSV in the anchors schema; null -> derived from synthetic events
+    release_lag: [120, 500]      # enforcement lag (bars) between conduct end and publication, synthetic only
+    proxy_labels: rule           # synthetic only: replace Panel.labels by rule labels so evaluation on anchors is non-trivial
+
+labeling_functions:
+  - {name: fwd_jump, horizon: 5, k_pos: 3.0, k_neg: 0.75, window: 60}
+  - {name: volume_spike, k_pos: 2.5, k_neg: 0.5, window: 60, lookahead: 3}
+  - {name: halt_or_limit, lookahead: 3}
+  - {name: spread_blowout, k_pos: 3.0, window: 60, lookahead: 3}
+  - {name: social_burst, k_pos: 2.5, window: 60}
+
+splits:                          # purge is raised automatically to max(LF look-ahead, max horizon + latency + exec_max)
+  train: 1500
+  val: 250
+  test: 400
+  step: 400
+  purge: 30
+  embargo: 10
+  anchored: false
+  max_folds: 3
+
+data:
+  lookback: 64
+  latency: 1
+  exec_max: 4
+  vol_window: 60
+  batch_size: 256
+  unlabeled_subsample: 0.5       # uniform; never conditioned on any label
+  num_workers: 0
+
+model:
+  name: warn2trade
+  horizons: null                 # null -> dataset default grid
+  taus: [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
+  tde_hidden: 256
+  encoder: {d_model: 64, patch_len: 8, stride: 4, price_layers: 2, fusion_layers: 1, n_heads: 4, dropout: 0.1, text_decay: 0.1}
+  policy: {n_exec: 4, w_max: 1.0, hidden: 128, cost_rt: 0.002, lam_cvar: 0.5, alpha: 0.1, kelly_frac: 0.25, a_min: 0.5}
+  ablation: {}
+
+semi:
+  use_anchors: true
+  anchors_for: all               # all | sign_only (anchors only fix the label model's sign; L_sup sees normals only)
+  use_label_model: true          # false -> majority vote
+  teacher: mixture               # mixture | labelmodel | model (FixMatch)
+  use_conformal: false           # BH-conformal gate on every teacher positive. OFF by default: valid but powerless at ~1%
+                                 # prevalence (see plan section 3.3); configs/ablations/conformal_gate*.yaml evaluate it
+  gate_q: 0.1                    # BH level q (FDR of the gate set, Proposition 2)
+  gate_score: labelmodel         # score used for the gate: labelmodel (strongest valid) | svdd | logit
+  gate_refresh: false            # false = frozen after the warm stage (guarantee holds); true = heuristic ablation
+  cal_trim_tau: null             # trimming calibration rows by label-model posterior restores power but breaks validity
+                                 # (measured FDR 0.71 at q = 0.1); keep null except in the trimming ablation
+  min_calibration: 20
+  use_consistency: true
+  tau: 0.9
+  dynamic_threshold: true
+  threshold_momentum: 0.99
+  teacher_mix_final: 0.3
+  use_ssl: true
+  ssl_in_semi: true
+  proj_dim: 64
+  use_outcome_weights: true
+  outcome_m: 2.0
+  outcome_kappa: 4.0
+  outcome_floor: 0.1
+  use_trade_loss: true
+  prior_pos: 0.01
+
+augment: {weak_jitter: 0.02, weak_scale: 0.05, strong_jitter: 0.05, strong_scale: 0.2, time_mask_frac: 0.3, n_segments: 0, drop_doc_p: 0.3}
+
+loss:
+  lam_sad: 1.0                   # Deep SAD term on the latent
+  eta: 1.0                       # Deep SAD anomaly push-out weight
+  lam_dev: 0.5                   # deviation (DevNet) term on the score head
+  dev_margin: 5.0
+  lam_cons: 1.0
+  lam_ssl: 0.5
+  lam_rec: 0.5
+  temperature: 0.2
+  lam_imp: 0.5
+  lam_trade: 1.0
+  lam_down: 1.0
+  lam_cvar: 0.5
+  cvar_alpha: 0.05
+  lam_turnover: 0.01
+
+train:
+  epochs_ssl: 2
+  epochs_warm: 2
+  epochs_semi: 4
+  epochs_joint: 4
+  trade_ramp_epochs: 2
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+
+eval:
+  labels: anchors                # anchors (oracle anchor raster) | rule (proxy events) | union
+  score: logit                   # detector score: logit | svdd (Deep SAD)
+  policy: true                   # also evaluate the learned policy (only models that have one)
+  min_val_events: 3              # threshold = best F1 on validation if it holds >= this many cases, else the fire quantile
+  fire_quantile: 0.99
+  k_frac: 0.01
+  direction: fade                # shared score-to-trade rule for every detector
+  w: 0.5
+  hold_h: 5
+  overlay_hold: 5                # long-only de-risk overlay: stay out for `overlay_hold` bars after a warning
+  borrow_bps_annual: 300         # borrow fee charged on short slots in the netted portfolio
+  slot_cap: 1.0
+  n_perm: 200                    # timing-permutation null draws at the default cost
+  n_boot: 500                    # case-level bootstrap draws for event-level CIs
+  block: 20                      # negative-row block length for the bootstrap
+
+backtest:
+  commission_bps: 5.0
+  bps_grid: [1, 5, 10, 15, 30]
+  use_half_spread: true
+  impact_eta: 0.1
+  delay_zeta: 0.05
+  notional: 1.0

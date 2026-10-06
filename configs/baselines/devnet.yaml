@@ -1,0 +1,7 @@
+# DevNet (Pang et al., KDD 2019): deviation loss on the score head only, scored by the head.
+_base_: ../default.yaml
+experiment: {name: baseline_devnet}
+semi: {use_label_model: false, use_conformal: false, use_consistency: false, use_ssl: false, use_outcome_weights: false, use_trade_loss: false}
+loss: {lam_sad: 0.0, lam_dev: 1.0}
+eval: {score: logit, policy: false}
+model: {ablation: {two_stage: true}}

@@ -1,0 +1,4 @@
+# Power-restoring trimmed calibration: NOT valid; reported to show the validity / power trade-off.
+_base_: ../default.yaml
+experiment: {name: ablation_conformal_gate_trimmed}
+semi: {use_conformal: true, gate_score: labelmodel, cal_trim_tau: 0.5}

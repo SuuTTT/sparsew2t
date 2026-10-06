@@ -1,0 +1,5 @@
+# The anchored label model itself as the detector, scored with CAUSAL labelling functions only at test time.
+_base_: ../default.yaml
+experiment: {name: baseline_label_model_only}
+baseline: label_model_only
+baseline_cfg: {prior_pos: 0.01, use_anchors: true}

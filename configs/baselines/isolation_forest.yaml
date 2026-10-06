@@ -1,0 +1,4 @@
+_base_: ../default.yaml
+experiment: {name: baseline_isolation_forest}
+baseline: isolation_forest
+baseline_cfg: {n_estimators: 200}

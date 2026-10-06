@@ -1,0 +1,11 @@
+_base_: default.yaml
+experiment: {name: smoke}
+seeds: [42]
+label_budget: {k_values: [1, null], n_cal: 0.1, cal_block: 5}
+dataset: {T: 1100, N: 6, event_rate: 0.012, anchors: {release_lag: [40, 120]}}
+splits: {train: 500, val: 150, test: 200, step: 200, purge: 12, embargo: 5, max_folds: 1}
+data: {lookback: 32, batch_size: 128, unlabeled_subsample: 0.7}
+model: {encoder: {d_model: 32, price_layers: 1, fusion_layers: 1}, tde_hidden: 64, policy: {hidden: 64}}
+train: {epochs_ssl: 1, epochs_warm: 1, epochs_semi: 1, epochs_joint: 1, trade_ramp_epochs: 1}
+eval: {n_perm: 20, n_boot: 50, min_val_events: 2}
+backtest: {bps_grid: [5, 15]}

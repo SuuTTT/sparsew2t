@@ -1,0 +1,6 @@
+# FlexMatch (Zhang et al., NeurIPS 2021): FixMatch + class-wise curriculum threshold; still self-teaching, no LFs.
+_base_: ../default.yaml
+experiment: {name: baseline_flexmatch_fin}
+semi: {teacher: model, use_label_model: false, use_conformal: false, dynamic_threshold: true, tau: 0.95, use_ssl: false, use_outcome_weights: false, use_trade_loss: false}
+eval: {score: logit, policy: false}
+model: {ablation: {two_stage: true}}

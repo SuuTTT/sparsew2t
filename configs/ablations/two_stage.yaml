@@ -1,0 +1,3 @@
+_base_: ../default.yaml
+experiment: {name: ablation_two_stage}
+model: {ablation: {two_stage: true}}
