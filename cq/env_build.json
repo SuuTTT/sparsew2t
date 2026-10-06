@@ -1,0 +1,8 @@
+{"name": "sparsew2t conda env build (c220, internet)", "work": "sparsew2t",
+ "command": ["bash", "-lc", "export CONDA_PKGS_DIRS=/home/sudingli/cq-home/sparsew2t/cache/conda PIP_CACHE_DIR=/home/sudingli/cq-home/sparsew2t/cache/pip; ~/miniconda3/bin/conda env create -y -p /home/sudingli/cq-home/sparsew2t/env -f environment.yml > $CQ_OUTPUT_DIR/build.log 2>&1 && /home/sudingli/cq-home/sparsew2t/env/bin/python -c 'import torch, numpy, pandas, scipy, sklearn, yaml, tabulate, baostock; print(torch.__version__)' >> $CQ_OUTPUT_DIR/build.log && touch $CQ_OUTPUT_DIR/env.ok"],
+ "code": {"repo": "/home/sudingli/cq-home/sparsew2t/repo", "commit": "COMMIT"},
+ "home": {"name": "sparsew2t", "from": "c227"},
+ "resources": {"gpus": 0, "cpus": 4, "ram_gb": 8},
+ "limits": {"max_hours": 1, "max_attempts": 1},
+ "placement": {"prefer": ["c220"]},
+ "outputs": {"dest": "/home/sudingli/cq-home/sparsew2t/results/env-build", "expect": [{"path": "env.ok"}]}}
