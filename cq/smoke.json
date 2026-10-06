@@ -13,7 +13,7 @@
  },
  "home": {
   "name": "sparsew2t",
-  "from": "c224"
+  "from": "c225"
  },
  "env": {
   "OMP_NUM_THREADS": "4",
