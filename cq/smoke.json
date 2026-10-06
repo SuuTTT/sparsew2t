@@ -1,10 +1,11 @@
 {"name": "sparsew2t smoke: 12 tests + one synthetic smoke run", "work": "sparsew2t",
  "command": ["bash", "-lc", "python -W ignore tests/test_smoke.py > $CQ_OUTPUT_DIR/test.log 2>&1 && grep -q '12/12 passed' $CQ_OUTPUT_DIR/test.log && python -W ignore scripts/run_experiment.py --config configs/smoke.yaml --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"],
  "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
- "code": {"repo": "/home/sudingli/cq-home/sparsew2t/repo", "commit": "COMMIT"},
- "home": {"name": "sparsew2t", "from": "c227"},
+ "code": {"git": "SuuTTT/sparsew2t", "commit": "COMMIT"},
+ "home": {"name": "sparsew2t", "from": "c224"},
  "env": {"OMP_NUM_THREADS": "4", "MKL_NUM_THREADS": "4", "PYTHONUNBUFFERED": "1"},
  "resources": {"gpus": 0, "cpus": 4, "ram_gb": 6},
  "limits": {"max_hours": 0.5, "max_attempts": 1},
+ "depends_on": ["ENV_JOB_ID"],
  "outputs": {"dest": "/home/sudingli/cq-home/sparsew2t/results/smoke", "expect": [{"path": "DONE"}, {"path": "rows.csv", "min_lines": 10}],
              "progress": {"path": "progress.txt", "stall_min": 20}}}
