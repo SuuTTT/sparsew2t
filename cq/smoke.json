@@ -4,7 +4,7 @@
  "command": [
   "bash",
   "-lc",
-  "python -W ignore tests/test_smoke.py > $CQ_OUTPUT_DIR/test.log 2>&1 && grep -q '12/12 passed' $CQ_OUTPUT_DIR/test.log && python -W ignore scripts/run_experiment.py --config configs/smoke.yaml --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"
+  "/home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore tests/test_smoke.py > $CQ_OUTPUT_DIR/test.log 2>&1 && grep -q '12/12 passed' $CQ_OUTPUT_DIR/test.log && /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/smoke.yaml --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"
  ],
  "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
  "code": {

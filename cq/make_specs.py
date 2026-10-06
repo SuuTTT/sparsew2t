@@ -30,7 +30,7 @@ def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=
 
 def run_cmd(cfg, dcfg, seed, k, protocols):
     d = f" --dataset-config {dcfg}" if dcfg else ""
-    return (f"ln -sfn {HOME}/data data && python -W ignore scripts/run_experiment.py --config {cfg}{d} --seeds {seed} --k {' '.join(k)} "
+    return (f"ln -sfn {HOME}/data data && {HOME}/env/bin/python -W ignore scripts/run_experiment.py --config {cfg}{d} --seeds {seed} --k {' '.join(k)} "
             f"--protocols {' '.join(protocols)} --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 "
             f"&& cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE")
 
