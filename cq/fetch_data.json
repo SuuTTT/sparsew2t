@@ -17,7 +17,8 @@
  },
  "env": {
   "OMP_NUM_THREADS": "2",
-  "PYTHONUNBUFFERED": "1"
+  "PYTHONUNBUFFERED": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
  },
  "resources": {
   "gpus": 0,

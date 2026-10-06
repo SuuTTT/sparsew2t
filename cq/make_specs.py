@@ -17,7 +17,7 @@ def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=
          "code": {"git": "SuuTTT/sparsew2t", "commit": commit},
          "data": [{"path": f"{HOME}/data", "gb": data_gb}],
          "home": {"name": "sparsew2t", "from": "c224"},
-         "env": {"OMP_NUM_THREADS": str(cpus), "MKL_NUM_THREADS": str(cpus), "PYTHONUNBUFFERED": "1"},
+         "env": {"OMP_NUM_THREADS": str(cpus), "MKL_NUM_THREADS": str(cpus), "PYTHONUNBUFFERED": "1", "LD_LIBRARY_PATH": f"{HOME}/env/lib"},
          "resources": {"gpus": 0, "cpus": cpus, "ram_gb": ram_gb},
          "limits": {"max_hours": hours, "max_attempts": 2},
          "outputs": {"dest": dest, "expect": [{"path": "DONE"}, {"path": "rows.csv", "min_lines": 10}],

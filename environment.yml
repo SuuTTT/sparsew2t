@@ -1,4 +1,6 @@
-# conda env for SparseWarn2Trade; built at exactly /home/sudingli/cq-home/sparsew2t/env (cq copies the home between servers)
+# conda env for SparseWarn2Trade; built at exactly /home/sudingli/cq-home/sparsew2t/env (cq copies the home between servers).
+# torch comes from conda-forge (CPU build) so every package links against the env's own libstdc++ (the pip torch wheel
+# pulled in the host's older libstdc++ and broke scipy: CXXABI_1.3.15 not found).
 name: sparsew2t
 channels: [conda-forge]
 dependencies:
@@ -7,11 +9,11 @@ dependencies:
   - pandas>=2.2,<2.4
   - scipy>=1.13
   - scikit-learn>=1.5
+  - pytorch=2.4.*=cpu*
+  - libstdcxx-ng
   - pyyaml
   - tabulate
   - requests
   - pip
   - pip:
-      - --extra-index-url https://download.pytorch.org/whl/cpu
-      - torch==2.4.1+cpu
       - baostock
