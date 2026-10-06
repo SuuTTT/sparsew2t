@@ -1,7 +1,37 @@
-{"name": "sparsew2t smoke on Kaggle CPU (12 tests + one synthetic run)", "work": "sparsew2t",
- "placement": {"target": "kaggle"},
- "code": {"github": "SuuTTT/sparsew2t", "commit": "COMMIT"},
- "command": ["bash", "-lc", "pip install -q tabulate baostock > $CQ_OUTPUT_DIR/pip.log 2>&1; python -c 'import sys, torch, pandas, numpy, scipy, sklearn; print(sys.version, torch.__version__, pandas.__version__, numpy.__version__)' > $CQ_OUTPUT_DIR/versions.txt 2>&1; OMP_NUM_THREADS=4 python -W ignore tests/test_smoke.py > $CQ_OUTPUT_DIR/test.log 2>&1; grep -q '12/12 passed' $CQ_OUTPUT_DIR/test.log && OMP_NUM_THREADS=4 python -W ignore scripts/run_experiment.py --config configs/smoke.yaml --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"],
- "resources": {"gpus": 0, "cpus": 4, "ram_gb": 8},
- "limits": {"max_hours": 1, "max_attempts": 1},
- "outputs": {"dest": "~/.local/share/cq/kaggle/sparsew2t-smoke", "expect": [{"path": "DONE"}, {"path": "rows.csv", "min_lines": 10}]}}
+{
+ "name": "sparsew2t smoke on Kaggle CPU (12 tests + one synthetic run)",
+ "work": "sparsew2t",
+ "placement": {
+  "target": "kaggle"
+ },
+ "code": {
+  "github": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "command": [
+  "bash",
+  "-lc",
+  "set -o pipefail; O=$CQ_OUTPUT_DIR; echo '[1/4] pip'; pip install -q tabulate baostock 2>&1 | tail -n 5 | tee $O/pip.log; echo '[2/4] versions'; python -c 'import sys, torch, pandas, numpy, scipy, sklearn; print(sys.version, torch.__version__, pandas.__version__, numpy.__version__, scipy.__version__, sklearn.__version__)' 2>&1 | tee $O/versions.txt; echo '[3/4] tests'; OMP_NUM_THREADS=4 python -W ignore tests/test_smoke.py 2>&1 | tee $O/test.log | grep -E 'PASS|FAIL|passed|Error|assert' ; grep -q '12/12 passed' $O/test.log || { echo 'TESTS FAILED'; tail -n 60 $O/test.log; exit 1; }; echo '[4/4] smoke run'; OMP_NUM_THREADS=4 python -W ignore scripts/run_experiment.py --config configs/smoke.yaml --override experiment.device=cpu --out $O/run > $O/run.log 2>&1 || { tail -n 60 $O/run.log; exit 1; }; tail -n 25 $O/run.log; cp $(ls -d $O/run/*/*/ | head -1)*.csv $O/ && touch $O/DONE"
+ ],
+ "resources": {
+  "gpus": 0,
+  "cpus": 4,
+  "ram_gb": 8
+ },
+ "limits": {
+  "max_hours": 1,
+  "max_attempts": 1
+ },
+ "outputs": {
+  "dest": "/Users/sudingli/.local/share/cq/kaggle/sparsew2t-smoke",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "rows.csv",
+    "min_lines": 10
+   }
+  ]
+ }
+}
