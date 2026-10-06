@@ -1,7 +1,39 @@
-{"name": "sparsew2t env build (micromamba, CPU)", "work": "sparsew2t",
- "command": ["bash", "-lc", "set -e; mkdir -p /home/sudingli/cq-home/sparsew2t/cache; cd /home/sudingli/cq-home/sparsew2t/cache; [ -x bin/micromamba ] || curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba; export MAMBA_ROOT_PREFIX=/home/sudingli/cq-home/sparsew2t/cache/mamba PIP_CACHE_DIR=/home/sudingli/cq-home/sparsew2t/cache/pip; ./bin/micromamba create -y -p /home/sudingli/cq-home/sparsew2t/env -f /home/sudingli/cq-home/sparsew2t/repo/environment.yml > $CQ_OUTPUT_DIR/build.log 2>&1; /home/sudingli/cq-home/sparsew2t/env/bin/python -c 'import torch, numpy, pandas, scipy, sklearn, yaml, tabulate, baostock; print(torch.__version__)' >> $CQ_OUTPUT_DIR/build.log; touch $CQ_OUTPUT_DIR/env.ok"],
- "code": {"git": "SuuTTT/sparsew2t", "commit": "COMMIT"},
- "home": {"name": "sparsew2t", "from": "c224"},
- "resources": {"gpus": 0, "cpus": 4, "ram_gb": 8},
- "limits": {"max_hours": 1, "max_attempts": 1},
- "outputs": {"dest": "/home/sudingli/cq-home/sparsew2t/results/env-build", "expect": [{"path": "env.ok"}]}}
+{
+ "name": "sparsew2t env build (micromamba, CPU, needs internet)",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -e; mkdir -p /home/sudingli/cq-home/sparsew2t/cache; cd /home/sudingli/cq-home/sparsew2t/cache; if [ ! -x bin/micromamba ]; then curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest -o mm.tar.bz2; python3 -c \"import tarfile; tarfile.open('mm.tar.bz2').extract('bin/micromamba', '.')\"; fi; export MAMBA_ROOT_PREFIX=/home/sudingli/cq-home/sparsew2t/cache/mamba PIP_CACHE_DIR=/home/sudingli/cq-home/sparsew2t/cache/pip; ./bin/micromamba create -y -p /home/sudingli/cq-home/sparsew2t/env -f /home/sudingli/cq-home/sparsew2t/repo/environment.yml > $CQ_OUTPUT_DIR/build.log 2>&1; /home/sudingli/cq-home/sparsew2t/env/bin/python -c 'import torch, numpy, pandas, scipy, sklearn, yaml, tabulate, baostock; print(torch.__version__)' >> $CQ_OUTPUT_DIR/build.log; touch $CQ_OUTPUT_DIR/env.ok"
+ ],
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 4,
+  "ram_gb": 8
+ },
+ "limits": {
+  "max_hours": 1,
+  "max_attempts": 1
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/env-build",
+  "expect": [
+   {
+    "path": "env.ok"
+   }
+  ]
+ },
+ "placement": {
+  "never": [
+   "c227"
+  ]
+ }
+}

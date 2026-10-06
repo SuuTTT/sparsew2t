@@ -1,11 +1,60 @@
-{"name": "sparsew2t data fetch (pump table, Binance Vision, CSRC, Baostock A-shares)", "work": "sparsew2t",
- "command": ["bash", "-lc", "set -e; D=$CQ_OUTPUT_DIR; mkdir -p $D/pnd $D/crypto $D/csrc $D/ashare_bs; echo 0/5 > $D/progress.txt; curl -s -m 60 -o $D/pnd/pump_telegram.csv https://raw.githubusercontent.com/SystemsLab-Sapienza/pump-and-dump-dataset/master/pump_telegram.csv; python scripts/data_fetch/fetch_binance_pnd.py --pumps $D/pnd/pump_telegram.csv --out $D/crypto > $D/fetch_crypto.log 2>&1; echo 1/5 >> $D/progress.txt; python scripts/data_fetch/fetch_csrc.py --out $D/csrc > $D/fetch_csrc.log 2>&1; echo 2/5 >> $D/progress.txt; python scripts/data_fetch/fetch_ashare_bs.py --out $D/ashare_bs --procs 4 > $D/fetch_ashare.log 2>&1; echo 3/5 >> $D/progress.txt; python scripts/data_fetch/parse_csrc.py --decisions $D/csrc/csrc_decisions.jsonl --universe $D/ashare_bs/universe.csv --out $D/csrc > $D/parse_csrc.log 2>&1; python scripts/data_fetch/split_csrc_sheet.py $D/csrc/csrc_sheet_auto.csv 365 2008-03-01 >> $D/parse_csrc.log 2>&1; echo 4/5 >> $D/progress.txt; rm -rf $D/ashare_bs/cache; echo 5/5 >> $D/progress.txt; touch $D/DONE"],
+{
+ "name": "sparsew2t data fetch (pump table, Binance Vision, CSRC, Baostock A-shares)",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -e; D=$CQ_OUTPUT_DIR; mkdir -p $D/pnd $D/crypto $D/csrc $D/ashare_bs; echo 0/5 > $D/progress.txt; curl -s -m 60 -o $D/pnd/pump_telegram.csv https://raw.githubusercontent.com/SystemsLab-Sapienza/pump-and-dump-dataset/master/pump_telegram.csv; python scripts/data_fetch/fetch_binance_pnd.py --pumps $D/pnd/pump_telegram.csv --out $D/crypto > $D/fetch_crypto.log 2>&1; echo 1/5 >> $D/progress.txt; python scripts/data_fetch/fetch_csrc.py --out $D/csrc > $D/fetch_csrc.log 2>&1; echo 2/5 >> $D/progress.txt; python scripts/data_fetch/fetch_ashare_bs.py --out $D/ashare_bs --procs 4 > $D/fetch_ashare.log 2>&1; echo 3/5 >> $D/progress.txt; python scripts/data_fetch/parse_csrc.py --decisions $D/csrc/csrc_decisions.jsonl --universe $D/ashare_bs/universe.csv --out $D/csrc > $D/parse_csrc.log 2>&1; python scripts/data_fetch/split_csrc_sheet.py $D/csrc/csrc_sheet_auto.csv 365 2008-03-01 >> $D/parse_csrc.log 2>&1; echo 4/5 >> $D/progress.txt; rm -rf $D/ashare_bs/cache; echo 5/5 >> $D/progress.txt; touch $D/DONE"
+ ],
  "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
- "code": {"git": "SuuTTT/sparsew2t", "commit": "COMMIT"},
- "home": {"name": "sparsew2t", "from": "c224"},
- "env": {"OMP_NUM_THREADS": "2", "PYTHONUNBUFFERED": "1"},
- "resources": {"gpus": 0, "cpus": 4, "ram_gb": 16},
- "limits": {"max_hours": 6, "max_attempts": 2},
- "depends_on": ["ENV_JOB_ID"],
- "outputs": {"dest": "/home/sudingli/cq-home/sparsew2t/data", "expect": [{"path": "DONE"}, {"path": "crypto/bars_1h.csv"}, {"path": "csrc/csrc_sheet_auto_tight.csv"}, {"path": "ashare_bs/daily_bars.csv"}],
-             "progress": {"path": "progress.txt", "stall_min": 120}}}
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "2",
+  "PYTHONUNBUFFERED": "1"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 4,
+  "ram_gb": 16
+ },
+ "limits": {
+  "max_hours": 6,
+  "max_attempts": 2
+ },
+ "depends_on": [
+  "ENV_JOB_ID"
+ ],
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/data",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "crypto/bars_1h.csv"
+   },
+   {
+    "path": "csrc/csrc_sheet_auto_tight.csv"
+   },
+   {
+    "path": "ashare_bs/daily_bars.csv"
+   }
+  ],
+  "progress": {
+   "path": "progress.txt",
+   "stall_min": 120
+  }
+ },
+ "placement": {
+  "never": [
+   "c227"
+  ]
+ }
+}
