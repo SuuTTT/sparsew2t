@@ -1,12 +1,12 @@
-# conda env for SparseWarn2Trade; build at exactly /home/sudingli/cq-home/sparsew2t/env (cq copies the home between servers)
+# conda env for SparseWarn2Trade; built at exactly /home/sudingli/cq-home/sparsew2t/env (cq copies the home between servers)
 name: sparsew2t
 channels: [conda-forge]
 dependencies:
   - python=3.11
-  - numpy=1.26
-  - pandas=2.2
-  - scipy=1.13
-  - scikit-learn=1.5
+  - numpy>=1.26,<2.1
+  - pandas>=2.2,<2.4
+  - scipy>=1.13
+  - scikit-learn>=1.5
   - pyyaml
   - tabulate
   - requests
@@ -14,4 +14,4 @@ dependencies:
   - pip:
       - --extra-index-url https://download.pytorch.org/whl/cpu
       - torch==2.4.1+cpu
-      - baostock==0.8.9
+      - baostock
