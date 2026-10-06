@@ -1,5 +1,5 @@
 {
- "name": "sparsew2t env build (micromamba, CPU, needs internet)",
+ "name": "sparsew2t env build on c224 (home master)",
  "work": "sparsew2t",
  "command": [
   "bash",
@@ -12,11 +12,11 @@
  },
  "home": {
   "name": "sparsew2t",
-  "from": "c225"
+  "from": "c224"
  },
  "resources": {
   "gpus": 0,
-  "cpus": 4,
+  "cpus": 1,
   "ram_gb": 8
  },
  "limits": {
@@ -33,7 +33,14 @@
  },
  "placement": {
   "never": [
-   "c227"
+   "c203",
+   "c219",
+   "c220",
+   "c222",
+   "c223",
+   "c225",
+   "c227",
+   "c237"
   ]
  }
 }
