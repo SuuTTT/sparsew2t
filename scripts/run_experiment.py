@@ -85,6 +85,12 @@ def main():
     rep.to_csv(os.path.join(out_dir, "lf_report.csv"), index=False)
     rows.to_csv(os.path.join(out_dir, "rows.csv"), index=False)
     agg.to_csv(os.path.join(out_dir, "summary.csv"), index=False)
+    frac = float(cfg.get("eval", {}).get("save_neg_frac", 1.0))
+    if frac < 1.0 and len(scores):                     # small result files: pct on the full test set, weighted negative sample
+        scores["pct"] = scores.groupby(["method", "protocol", "K", "fold", "seed"])["score"].rank(pct=True)
+        keep = (scores["y"] == 1) | (np.random.default_rng(0).random(len(scores)) < frac)
+        scores = scores[keep].copy()
+        scores["w"] = np.where(scores["y"] == 1, 1.0, 1.0 / frac)
     scores.to_csv(os.path.join(out_dir, "scores.csv"), index=False)
     event_df.to_csv(os.path.join(out_dir, "event_level.csv"), index=False)
     les_df.to_csv(os.path.join(out_dir, "label_efficiency.csv"), index=False)

@@ -30,9 +30,10 @@ def load(tag, root="runs"):
         cfg = re.sub(r"_K[^_]+$", "", os.path.relpath(d, root).split(os.sep)[1])   # one-job-per-K folders: default_K3 -> default
         r = pd.read_csv(os.path.join(d, "rows.csv")); r["config"] = cfg; rows.append(r)
         s = pd.read_csv(os.path.join(d, "scores.csv")); s["config"] = cfg
-        s["pct"] = s.groupby(["fold", "seed"])["score"].rank(pct=True)          # on the full test set
-        keep = (s["y"] == 1) | (np.random.default_rng(len(s)).random(len(s)) < NEG_FRAC)
-        s = s[keep].copy(); s["w"] = np.where(s["y"] == 1, 1.0, 1.0 / NEG_FRAC)
+        if "w" not in s:                                                         # runs that saved every row
+            s["pct"] = s.groupby(["fold", "seed"])["score"].rank(pct=True)      # on the full test set
+            keep = (s["y"] == 1) | (np.random.default_rng(len(s)).random(len(s)) < NEG_FRAC)
+            s = s[keep].copy(); s["w"] = np.where(s["y"] == 1, 1.0, 1.0 / NEG_FRAC)
         scores.append(s)
     return pd.concat(rows, ignore_index=True), pd.concat(scores, ignore_index=True)
 
