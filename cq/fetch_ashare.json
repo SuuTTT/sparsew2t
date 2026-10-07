@@ -1,5 +1,11 @@
 {
+ "name": "sparsew2t data: Baostock A-shares (clean refetch to data/ashare_bs) + CSRC parse",
  "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -eo pipefail; O=$CQ_OUTPUT_DIR; echo 0/3 > $O/progress.txt; echo '[1/3] baostock'; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/fetch_ashare_bs.py --out $O --procs 4 2>&1 | grep -E --line-buffered 'universe|fetched|FAILED|rows' | tail -n 40; echo 1/3 >> $O/progress.txt; test -s $O/daily_bars.csv || { echo 'no daily_bars.csv'; exit 1; }; rm -rf $O/cache; echo '[2/3] parse CSRC'; mkdir -p $O/csrc_parsed; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/parse_csrc.py --decisions /home/sudingli/cq-home/sparsew2t/data/csrc/csrc_decisions.jsonl --universe $O/universe.csv --out $O/csrc_parsed 2>&1 | tail -n 6; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/split_csrc_sheet.py $O/csrc_parsed/csrc_sheet_auto.csv 365 2008-03-01; echo 2/3 >> $O/progress.txt; echo '[3/3] done'; echo 3/3 >> $O/progress.txt; touch $O/DONE"
+ ],
  "code": {
   "git": "SuuTTT/sparsew2t",
   "commit": "COMMIT"
@@ -16,7 +22,7 @@
  "resources": {
   "gpus": 0,
   "cpus": 4,
-  "ram_gb": 16
+  "ram_gb": 24
  },
  "limits": {
   "max_hours": 10,
@@ -27,29 +33,23 @@
    "c227"
   ]
  },
- "name": "sparsew2t data: Baostock A-shares (delisting-inclusive) + CSRC case parse",
- "command": [
-  "bash",
-  "-lc",
-  "set -eo pipefail; D=$CQ_OUTPUT_DIR; mkdir -p $D/ashare_bs $D/csrc; echo 0/3 > $D/progress.txt; echo '[1/3] baostock'; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/fetch_ashare_bs.py --out $D/ashare_bs --procs 4 2>&1 | grep -E 'universe|fetched|FAILED|rows' | tail -n 30; echo 1/3 >> $D/progress.txt; test -s $D/ashare_bs/daily_bars.csv || { echo 'no daily_bars.csv'; exit 1; }; echo '[2/3] parse CSRC'; cp /home/sudingli/cq-home/sparsew2t/data/csrc/csrc_decisions.jsonl $D/csrc/; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/parse_csrc.py --decisions $D/csrc/csrc_decisions.jsonl --universe $D/ashare_bs/universe.csv --out $D/csrc 2>&1 | tail -n 12; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/split_csrc_sheet.py $D/csrc/csrc_sheet_auto.csv 365 2008-03-01 2>&1; echo 2/3 >> $D/progress.txt; rm -rf $D/ashare_bs/cache; echo '[3/3] done'; echo 3/3 >> $D/progress.txt; touch $D/DONE_ashare"
- ],
  "outputs": {
-  "dest": "/home/sudingli/cq-home/sparsew2t/data",
+  "dest": "/home/sudingli/cq-home/sparsew2t/data/ashare_bs",
   "expect": [
    {
-    "path": "DONE_ashare"
+    "path": "DONE"
    },
    {
-    "path": "ashare_bs/daily_bars.csv"
+    "path": "daily_bars.csv"
    },
    {
-    "path": "csrc/csrc_sheet_auto_tight.csv",
+    "path": "csrc_parsed/csrc_sheet_auto_tight.csv",
     "min_lines": 100
    }
   ],
   "progress": {
    "path": "progress.txt",
-   "stall_min": 240
+   "stall_min": 300
   }
  }
 }
