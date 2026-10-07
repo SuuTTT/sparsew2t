@@ -1,0 +1,58 @@
+{
+ "name": "sparsew2t csrc bl_flexmatch_fin_K3 seed42",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -o pipefail; O=$CQ_OUTPUT_DIR; ln -sfn /home/sudingli/cq-home/sparsew2t/data data; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/baselines/flexmatch_fin.yaml --dataset-config configs/datasets/csrc_pilot.yaml --seeds 42 --k 3 --protocols release --override experiment.device=cpu label_budget.n_cal=0.005 eval.save_neg_frac=0.02 --out $O/run 2>&1 | tee $O/run.log | grep -E --line-buffered 'progress|Traceback|Error|saved'; f=$(find $O/run -name rows.csv | head -1); test -n \"$f\" || { echo 'NO rows.csv'; tail -n 40 $O/run.log; exit 1; }; cp $(dirname $f)/*.csv $O/ && touch $O/DONE"
+ ],
+ "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "31ea984c6a416dc0dbff9cbf9e7951cd795a2bca"
+ },
+ "data": [
+  {
+   "path": "/home/sudingli/cq-home/sparsew2t/data",
+   "gb": 3.0
+  }
+ ],
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "8",
+  "MKL_NUM_THREADS": "8",
+  "PYTHONUNBUFFERED": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 8,
+  "ram_gb": 40.0
+ },
+ "limits": {
+  "max_hours": 7.0,
+  "max_attempts": 2
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/csrc/bl_flexmatch_fin_K3/seed42",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "rows.csv",
+    "min_lines": 10
+   }
+  ],
+  "progress": {
+   "path": "progress.txt",
+   "stall_min": 90
+  }
+ },
+ "workload": {
+  "bound": "cpu"
+ }
+}
