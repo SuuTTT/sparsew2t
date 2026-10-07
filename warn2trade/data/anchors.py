@@ -59,7 +59,9 @@ def validate_anchor_table(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_anchor_table(path: str) -> pd.DataFrame:
-    return validate_anchor_table(pd.read_csv(path))
+    # asset and case ids are strings: A-share codes such as 000001 would otherwise be read as integers and lose their
+    # leading zeros, so no case would match a panel ticker (every anchor silently skipped)
+    return validate_anchor_table(pd.read_csv(path, dtype={"asset": str, "case_id": str, "source": str, "anomaly_class": str}))
 
 
 def dates_to_bar_index(dates: Iterable, times: np.ndarray, side: str = "left") -> np.ndarray:

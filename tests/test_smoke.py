@@ -216,6 +216,9 @@ def test_daily_bars_builder_cn_limits_and_sheet_to_anchors():
             {"case_id": "C2", "source": "CSRC", "ticker": "000001", "anomaly_class": "pump_dump", "onset_date": str(dates[10].date()),
              "end_date": str(dates[20].date()), "release_date": str(dates[300].date())}])
         table, rep = sheet_to_anchors(sheet, panel.times, panel.assets)
+        from warn2trade.data.anchors import load_anchor_table
+        table.to_csv(os.path.join(td, "anchors.csv"), index=False)
+        assert load_anchor_table(os.path.join(td, "anchors.csv"))["asset"].iloc[0] == "600000", "codes must stay strings"
         assert len(table) == 1 and int(table["release_t"].iloc[0]) == panel.T, "late release must not be clipped into the panel"
         assert rep["match_rate"].iloc[0] == 0.5
 
