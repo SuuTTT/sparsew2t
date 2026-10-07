@@ -13,12 +13,18 @@ from warn2trade.backtest.event_eval import event_level_summary, paired_event_del
 from warn2trade.backtest.portfolio_eval import deflated_sharpe_from_moments
 
 
-def load(tag):
+def load(tag, root="runs"):
+    """Run directories: <root>/<tag>/<config>/seed*/ (cq layout: rows.csv + scores.csv + DONE at the top) or the older
+    hand-run layout <root>/<tag>/<config>/seed*/<name>/<timestamp>/. Several tags may be given comma-separated."""
     rows, scores = [], []
-    for d in glob.glob(os.path.join("runs", tag, "*", "seed*", "*", "*")):
-        if not os.path.exists(os.path.join(d, "DONE")):
+    dirs = []
+    for t in tag.split(","):
+        dirs += [d for d in glob.glob(os.path.join(root, t, "*", "seed*")) if os.path.exists(os.path.join(d, "DONE"))]
+        dirs += [d for d in glob.glob(os.path.join(root, t, "*", "seed*", "*", "*")) if os.path.exists(os.path.join(d, "DONE"))]
+    for d in dirs:
+        if not os.path.exists(os.path.join(d, "rows.csv")):
             continue
-        cfg = d.split(os.sep)[2]
+        cfg = os.path.relpath(d, root).split(os.sep)[1]
         r = pd.read_csv(os.path.join(d, "rows.csv")); r["config"] = cfg; rows.append(r)
         s = pd.read_csv(os.path.join(d, "scores.csv")); s["config"] = cfg; scores.append(s)
     return pd.concat(rows, ignore_index=True), pd.concat(scores, ignore_index=True)
@@ -26,10 +32,12 @@ def load(tag):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--tag", required=True); ap.add_argument("--ref", default="default")
+    ap.add_argument("--root", default="runs"); ap.add_argument("--out", default=None)
     ap.add_argument("--n-boot", type=int, default=500); ap.add_argument("--bps", type=float, default=5.0)
     a = ap.parse_args()
-    out = os.path.join("results", a.tag); os.makedirs(out, exist_ok=True)
-    rows, scores = load(a.tag)
+    out = a.out or os.path.join("results", a.tag); os.makedirs(out, exist_ok=True)
+    rows, scores = load(a.tag, a.root)
+    print("loaded", rows["config"].nunique(), "configs,", len(rows), "rows,", len(scores), "score rows", flush=True)
     rows.to_csv(os.path.join(out, "rows_all.csv"), index=False)
     g = rows.groupby(["config", "rule", "protocol", "K", "bps", "metric"])["value"]
     summ = g.agg(["mean", "std", "count"]).reset_index(); summ.to_csv(os.path.join(out, "summary.csv"), index=False)

@@ -1,0 +1,9 @@
+{"name": "sparsew2t aggregate synthetic sweep (on c224, where results live)", "work": "sparsew2t",
+ "command": ["bash", "-lc", "set -o pipefail; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/aggregate_sweep.py --root /home/sudingli/cq-home/sparsew2t/results --tag syn,syn_abl --ref default --n-boot 300 --out $CQ_OUTPUT_DIR 2>&1 | tail -n 80; test -s $CQ_OUTPUT_DIR/tables.md && touch $CQ_OUTPUT_DIR/DONE"],
+ "code": {"git": "SuuTTT/sparsew2t", "commit": "COMMIT"},
+ "home": {"name": "sparsew2t", "from": "c224"},
+ "env": {"OMP_NUM_THREADS": "2", "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib", "PYTHONUNBUFFERED": "1"},
+ "resources": {"gpus": 0, "cpus": 2, "ram_gb": 8},
+ "limits": {"max_hours": 1, "max_attempts": 1},
+ "placement": {"never": ["c203", "c219", "c220", "c222", "c223", "c225", "c227", "c237"]},
+ "outputs": {"dest": "/home/sudingli/cq-home/sparsew2t/results/syn_summary", "expect": [{"path": "DONE"}, {"path": "tables.md"}, {"path": "event_level.csv"}]}}
