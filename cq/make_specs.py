@@ -31,9 +31,10 @@ def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=
 def run_cmd(cfg, dcfg, seed, k, protocols, overrides=()):
     d = f" --dataset-config {dcfg}" if dcfg else ""
     ov = " ".join(["experiment.device=cpu", *overrides])
-    return (f"ln -sfn {HOME}/data data && {HOME}/env/bin/python -W ignore scripts/run_experiment.py --config {cfg}{d} --seeds {seed} --k {' '.join(k)} "
-            f"--protocols {' '.join(protocols)} --override {ov} --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 "
-            f"&& cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE")
+    return (f"set -o pipefail; O=$CQ_OUTPUT_DIR; ln -sfn {HOME}/data data; {HOME}/env/bin/python -W ignore scripts/run_experiment.py --config {cfg}{d} "
+            f"--seeds {seed} --k {' '.join(k)} --protocols {' '.join(protocols)} --override {ov} --out $O/run 2>&1 | tee $O/run.log "
+            f"| grep -E --line-buffered 'progress|Traceback|Error|saved'; f=$(find $O/run -name rows.csv | head -1); "
+            f"test -n \"$f\" || {{ echo 'NO rows.csv'; tail -n 40 $O/run.log; exit 1; }}; cp $(dirname $f)/*.csv $O/ && touch $O/DONE")
 
 
 def main():

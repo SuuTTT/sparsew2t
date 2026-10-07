@@ -1,0 +1,48 @@
+{
+ "name": "sparsew2t data: parse + split CSRC cases against the Baostock universe",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -eo pipefail; O=$CQ_OUTPUT_DIR; mkdir -p $O/csrc; ls -la /home/sudingli/cq-home/sparsew2t/data/ashare_bs | head; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/parse_csrc.py --decisions /home/sudingli/cq-home/sparsew2t/data/csrc/csrc_decisions.jsonl --universe /home/sudingli/cq-home/sparsew2t/data/ashare_bs/universe.csv --out $O/csrc 2>&1 | tail -n 14; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/split_csrc_sheet.py $O/csrc/csrc_sheet_auto.csv 365 2008-03-01 2>&1; touch $O/DONE_parse"
+ ],
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 1,
+  "ram_gb": 4
+ },
+ "limits": {
+  "max_hours": 0.5,
+  "max_attempts": 2
+ },
+ "data": [
+  {
+   "path": "/home/sudingli/cq-home/sparsew2t/data",
+   "gb": 2
+  }
+ ],
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/data",
+  "expect": [
+   {
+    "path": "DONE_parse"
+   },
+   {
+    "path": "csrc/csrc_sheet_auto_tight.csv",
+    "min_lines": 100
+   }
+  ]
+ }
+}
