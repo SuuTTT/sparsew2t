@@ -1,0 +1,61 @@
+{
+ "name": "sparsew2t crypto default_K10 seed2026",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "ln -sfn /home/sudingli/cq-home/sparsew2t/data data && /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/default.yaml --dataset-config configs/datasets/crypto_pnd_fast.yaml --seeds 2026 --k 10 --protocols release --override experiment.device=cpu label_budget.n_cal=0.02 --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"
+ ],
+ "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "1628c3a1920b1a847a2472429a5bf3d9d336f421"
+ },
+ "data": [
+  {
+   "path": "/home/sudingli/cq-home/sparsew2t/data",
+   "gb": 1.0
+  }
+ ],
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "4",
+  "MKL_NUM_THREADS": "4",
+  "PYTHONUNBUFFERED": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 4,
+  "ram_gb": 12.0
+ },
+ "limits": {
+  "max_hours": 1.5,
+  "max_attempts": 2
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/crypto/default_K10/seed2026",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "rows.csv",
+    "min_lines": 10
+   }
+  ],
+  "progress": {
+   "path": "progress.txt",
+   "stall_min": 90
+  }
+ },
+ "workload": {
+  "bound": "cpu"
+ },
+ "depends_on": [
+  "j-1007-d64f65"
+ ]
+}
