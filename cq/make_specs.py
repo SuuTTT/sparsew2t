@@ -28,10 +28,11 @@ def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=
     return s
 
 
-def run_cmd(cfg, dcfg, seed, k, protocols):
+def run_cmd(cfg, dcfg, seed, k, protocols, overrides=()):
     d = f" --dataset-config {dcfg}" if dcfg else ""
+    ov = " ".join(["experiment.device=cpu", *overrides])
     return (f"ln -sfn {HOME}/data data && {HOME}/env/bin/python -W ignore scripts/run_experiment.py --config {cfg}{d} --seeds {seed} --k {' '.join(k)} "
-            f"--protocols {' '.join(protocols)} --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 "
+            f"--protocols {' '.join(protocols)} --override {ov} --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 "
             f"&& cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE")
 
 
@@ -42,6 +43,8 @@ def main():
     ap.add_argument("--k", nargs="+", default=["1", "2", "3", "5", "10", "full"]); ap.add_argument("--protocols", nargs="+", default=["release"])
     ap.add_argument("--ram-gb", type=float, default=6); ap.add_argument("--cpus", type=int, default=4); ap.add_argument("--hours", type=float, default=3)
     ap.add_argument("--depends-on", default=None)
+    ap.add_argument("--override", nargs="*", default=[]); ap.add_argument("--split-k", action="store_true", help="one job per K value")
+    ap.add_argument("--data-gb", type=float, default=2)
     a = ap.parse_args()
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "specs", a.tag); os.makedirs(out, exist_ok=True)
     n = 0
@@ -49,10 +52,14 @@ def main():
         base = os.path.splitext(os.path.basename(c))[0]
         label = ("bl_" if "/baselines/" in c else "ab_" if "/ablations/" in c else "") + base
         for s in a.seeds:
-            dest = f"{HOME}/results/{a.tag}/{label}/seed{s}"
-            js = spec(f"sparsew2t {a.tag} {label} seed{s}", run_cmd(c, a.dataset_config, s, a.k, a.protocols), a.commit,
-                      a.ram_gb, a.cpus, a.hours, dest, a.depends_on)
-            json.dump(js, open(os.path.join(out, f"{label}_seed{s}.json"), "w"), indent=1); n += 1
+            for kk in ([[k] for k in a.k] if a.split_k else [a.k]):
+                suf = f"_K{kk[0]}" if a.split_k else ""
+                dest = f"{HOME}/results/{a.tag}/{label}{suf}/seed{s}"
+                js = spec(f"sparsew2t {a.tag} {label}{suf} seed{s}", run_cmd(c, a.dataset_config, s, kk, a.protocols, a.override), a.commit,
+                          a.ram_gb, a.cpus, a.hours, dest, a.depends_on, a.data_gb)
+                if not a.dataset_config:
+                    js.pop("data", None)
+                json.dump(js, open(os.path.join(out, f"{label}{suf}_seed{s}.json"), "w"), indent=1); n += 1
     print(n, "specs ->", out)
 
 
