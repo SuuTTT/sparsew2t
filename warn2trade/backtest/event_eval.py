@@ -63,8 +63,8 @@ def _resample(tables, ev_ids, blocks, rng):
     for seed, (ev, neg) in tables.items():
         ev_b = ev.reindex(e_s).dropna(subset=["s"])
         cnt = pd.Series(b_s).value_counts()
-        neg_b = neg.merge(cnt.rename("w"), left_on="nblock", right_index=True)
-        neg_b = neg_b.loc[neg_b.index.repeat(neg_b["w"])]
+        neg_b = neg.merge(cnt.rename("mult"), left_on="nblock", right_index=True)   # block multiplicity (not the sampling weight w)
+        neg_b = neg_b.loc[neg_b.index.repeat(neg_b["mult"])]
         res.append(_metrics(ev_b, neg_b))
     return pd.DataFrame(res).mean().to_dict()
 
