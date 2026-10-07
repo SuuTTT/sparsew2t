@@ -1,0 +1,48 @@
+{
+ "work": "sparsew2t",
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "2",
+  "PYTHONUNBUFFERED": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 1,
+  "ram_gb": 4
+ },
+ "limits": {
+  "max_hours": 1,
+  "max_attempts": 2
+ },
+ "placement": {
+  "never": [
+   "c227"
+  ]
+ },
+ "name": "sparsew2t data: CSRC decisions (2,036, full text)",
+ "command": [
+  "bash",
+  "-lc",
+  "set -eo pipefail; D=$CQ_OUTPUT_DIR/csrc; mkdir -p $D; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/fetch_csrc.py --out $D 2>&1 | tail -n 3; touch $CQ_OUTPUT_DIR/DONE_csrc"
+ ],
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/data",
+  "expect": [
+   {
+    "path": "DONE_csrc"
+   },
+   {
+    "path": "csrc/csrc_decisions.jsonl",
+    "min_lines": 2000
+   }
+  ]
+ }
+}
