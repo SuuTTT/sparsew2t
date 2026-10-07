@@ -4,7 +4,7 @@
 Writes results/<tag>/: rows_all.csv, summary.csv (fold means/std per method x rule x protocol x K x bps x metric),
 event_level.csv (pooled over folds AND seeds, case-bootstrap CIs), paired.csv (reference method vs every other method,
 same cases, paired bootstrap on event AUROC and event recall), dsr.csv, tables.md."""
-import argparse, glob, os, sys
+import argparse, glob, os, re, sys
 import numpy as np
 import pandas as pd
 
@@ -24,7 +24,7 @@ def load(tag, root="runs"):
     for d in dirs:
         if not os.path.exists(os.path.join(d, "rows.csv")):
             continue
-        cfg = os.path.relpath(d, root).split(os.sep)[1]
+        cfg = re.sub(r"_K[^_]+$", "", os.path.relpath(d, root).split(os.sep)[1])   # one-job-per-K folders: default_K3 -> default
         r = pd.read_csv(os.path.join(d, "rows.csv")); r["config"] = cfg; rows.append(r)
         s = pd.read_csv(os.path.join(d, "scores.csv")); s["config"] = cfg; scores.append(s)
     return pd.concat(rows, ignore_index=True), pd.concat(scores, ignore_index=True)

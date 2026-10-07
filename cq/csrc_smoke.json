@@ -1,0 +1,54 @@
+{
+ "name": "sparsew2t CSRC pilot smoke: power check + 1 fold K=3",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -o pipefail; O=$CQ_OUTPUT_DIR; ln -sfn /home/sudingli/cq-home/sparsew2t/data data; echo '[1/2] power'; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/power_check.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml 2>&1 | tee $O/power.log | tail -n 30; echo '[2/2] one fold'; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml --seeds 42 --k 3 --override experiment.device=cpu splits.max_folds=1 --out $O/run 2>&1 | tee $O/run.log | grep -E --line-buffered 'panel T=|supervision|fold 0|progress|Traceback|Error|saved'; grep -A3 'event level' $O/run.log; f=$(find $O/run -name rows.csv | head -1); test -n \"$f\" || { tail -n 40 $O/run.log; exit 1; }; cp $(dirname $f)/*.csv $O/ && touch $O/DONE"
+ ],
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "8",
+  "MKL_NUM_THREADS": "8",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib",
+  "PYTHONUNBUFFERED": "1"
+ },
+ "data": [
+  {
+   "path": "/home/sudingli/cq-home/sparsew2t/data",
+   "gb": 3
+  }
+ ],
+ "resources": {
+  "gpus": 0,
+  "cpus": 8,
+  "ram_gb": 48
+ },
+ "limits": {
+  "max_hours": 3,
+  "max_attempts": 1
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/csrc_smoke",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "rows.csv",
+    "min_lines": 10
+   }
+  ],
+  "progress": {
+   "path": "progress.txt",
+   "stall_min": 150
+  }
+ }
+}

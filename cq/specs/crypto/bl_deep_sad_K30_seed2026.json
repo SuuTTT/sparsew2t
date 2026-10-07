@@ -4,12 +4,12 @@
  "command": [
   "bash",
   "-lc",
-  "ln -sfn /home/sudingli/cq-home/sparsew2t/data data && /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/baselines/deep_sad.yaml --dataset-config configs/datasets/crypto_pnd_fast.yaml --seeds 2026 --k 30 --protocols release --override experiment.device=cpu label_budget.n_cal=0.02 --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"
+  "set -o pipefail; O=$CQ_OUTPUT_DIR; ln -sfn /home/sudingli/cq-home/sparsew2t/data data; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/baselines/deep_sad.yaml --dataset-config configs/datasets/crypto_pnd_fast.yaml --seeds 2026 --k 30 --protocols release --override experiment.device=cpu label_budget.n_cal=0.02 --out $O/run 2>&1 | tee $O/run.log | grep -E --line-buffered 'progress|Traceback|Error|saved'; f=$(find $O/run -name rows.csv | head -1); test -n \"$f\" || { echo 'NO rows.csv'; tail -n 40 $O/run.log; exit 1; }; cp $(dirname $f)/*.csv $O/ && touch $O/DONE"
  ],
  "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
  "code": {
   "git": "SuuTTT/sparsew2t",
-  "commit": "1628c3a1920b1a847a2472429a5bf3d9d336f421"
+  "commit": "725ee8b979028c0d375783551d12bcca260aa1bd"
  },
  "data": [
   {
@@ -54,8 +54,5 @@
  },
  "workload": {
   "bound": "cpu"
- },
- "depends_on": [
-  "j-1007-d64f65"
- ]
+ }
 }
