@@ -4,7 +4,7 @@
  "command": [
   "bash",
   "-lc",
-  "set -o pipefail; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/aggregate_sweep.py --root /home/sudingli/cq-home/sparsew2t/results --tag crypto --ref default --n-boot 300 --out $CQ_OUTPUT_DIR 2>&1 | tail -n 80; test -s $CQ_OUTPUT_DIR/tables.md && touch $CQ_OUTPUT_DIR/DONE"
+  "set -o pipefail; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/aggregate_sweep.py --root /home/sudingli/cq-home/sparsew2t/results --tag crypto --ref default --n-boot 200 --neg-frac 0.02 --out $CQ_OUTPUT_DIR 2>&1 | tail -n 80; test -s $CQ_OUTPUT_DIR/tables.md && touch $CQ_OUTPUT_DIR/DONE"
  ],
  "code": {
   "git": "SuuTTT/sparsew2t",
@@ -22,10 +22,10 @@
  "resources": {
   "gpus": 0,
   "cpus": 2,
-  "ram_gb": 16
+  "ram_gb": 32
  },
  "limits": {
-  "max_hours": 1,
+  "max_hours": 4,
   "max_attempts": 1
  },
  "placement": {

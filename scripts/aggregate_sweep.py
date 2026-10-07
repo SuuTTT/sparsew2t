@@ -13,6 +13,9 @@ from warn2trade.backtest.event_eval import event_level_summary, paired_event_del
 from warn2trade.backtest.portfolio_eval import deflated_sharpe_from_moments
 
 
+NEG_FRAC = 1.0
+
+
 def load(tag, root="runs"):
     """Run directories: <root>/<tag>/<config>/seed*/ (cq layout: rows.csv + scores.csv + DONE at the top) or the older
     hand-run layout <root>/<tag>/<config>/seed*/<name>/<timestamp>/. Several tags may be given comma-separated."""
@@ -26,16 +29,23 @@ def load(tag, root="runs"):
             continue
         cfg = re.sub(r"_K[^_]+$", "", os.path.relpath(d, root).split(os.sep)[1])   # one-job-per-K folders: default_K3 -> default
         r = pd.read_csv(os.path.join(d, "rows.csv")); r["config"] = cfg; rows.append(r)
-        s = pd.read_csv(os.path.join(d, "scores.csv")); s["config"] = cfg; scores.append(s)
+        s = pd.read_csv(os.path.join(d, "scores.csv")); s["config"] = cfg
+        s["pct"] = s.groupby(["fold", "seed"])["score"].rank(pct=True)          # on the full test set
+        keep = (s["y"] == 1) | (np.random.default_rng(len(s)).random(len(s)) < NEG_FRAC)
+        s = s[keep].copy(); s["w"] = np.where(s["y"] == 1, 1.0, 1.0 / NEG_FRAC)
+        scores.append(s)
     return pd.concat(rows, ignore_index=True), pd.concat(scores, ignore_index=True)
 
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--tag", required=True); ap.add_argument("--ref", default="default")
     ap.add_argument("--root", default="runs"); ap.add_argument("--out", default=None)
+    ap.add_argument("--neg-frac", type=float, default=1.0, help="keep this share of negative rows (weighted 1/frac)")
     ap.add_argument("--n-boot", type=int, default=500); ap.add_argument("--bps", type=float, default=5.0)
     a = ap.parse_args()
     out = a.out or os.path.join("results", a.tag); os.makedirs(out, exist_ok=True)
+    global NEG_FRAC
+    NEG_FRAC = a.neg_frac
     rows, scores = load(a.tag, a.root)
     print("loaded", rows["config"].nunique(), "configs,", len(rows), "rows,", len(scores), "score rows", flush=True)
     rows.to_csv(os.path.join(out, "rows_all.csv"), index=False)

@@ -21,7 +21,10 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 
 def _prep(trades: pd.DataFrame, block: int) -> pd.DataFrame:
     d = trades.copy()
-    d["pct"] = d.groupby(["fold", "seed"])["score"].rank(pct=True)
+    if "pct" not in d:                                    # aggregators may pre-compute pct on the full test set, then subsample negatives
+        d["pct"] = d.groupby(["fold", "seed"])["score"].rank(pct=True)
+    if "w" not in d:
+        d["w"] = 1.0
     d["fired"] = d["score"] >= d["thr_val"]
     d["nblock"] = d["asset"].astype(np.int64) * 1_000_000 + (d["t"] // max(block, 1)).astype(np.int64)
     return d
@@ -37,7 +40,7 @@ def _per_seed_tables(d: pd.DataFrame):
         first = g[g["fired"]].groupby("event_id")["bars_to_peak"].first()
         ev["lead"] = first.reindex(ev.index)
         ng = neg[neg["seed"] == seed]
-        out[seed] = (ev, ng[["pct", "fired", "nblock"]])
+        out[seed] = (ev, ng[["pct", "fired", "nblock", "w"]])
     return out
 
 
@@ -46,8 +49,10 @@ def _metrics(ev: pd.DataFrame, neg: pd.DataFrame) -> Dict[str, float]:
         return {"event_AUROC": np.nan, "event_AP": np.nan, "event_recall": np.nan, "FA_per_1k": np.nan, "lead_median": np.nan}
     y = np.r_[np.ones(len(ev)), np.zeros(len(neg))]
     s = np.r_[ev["s"].to_numpy(), neg["pct"].to_numpy()]
-    return {"event_AUROC": float(roc_auc_score(y, s)), "event_AP": float(average_precision_score(y, s)),
-            "event_recall": float(ev["det"].mean()), "FA_per_1k": float(1000 * neg["fired"].mean()),
+    wn = neg["w"].to_numpy() if "w" in neg else np.ones(len(neg))
+    sw = np.r_[np.ones(len(ev)), wn]                       # negatives may be subsampled with inverse-probability weights
+    return {"event_AUROC": float(roc_auc_score(y, s, sample_weight=sw)), "event_AP": float(average_precision_score(y, s, sample_weight=sw)),
+            "event_recall": float(ev["det"].mean()), "FA_per_1k": float(1000 * np.average(neg["fired"].to_numpy(), weights=wn)),
             "lead_median": float(np.nanmedian(ev["lead"])) if ev["lead"].notna().any() else np.nan}
 
 
