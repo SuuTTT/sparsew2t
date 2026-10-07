@@ -1,0 +1,55 @@
+{
+ "name": "sparsew2t syn_abl ab_rule_label_eval seed2026",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "ln -sfn /home/sudingli/cq-home/sparsew2t/data data && /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/run_experiment.py --config configs/ablations/rule_label_eval.yaml --seeds 2026 --k 3 10 --protocols release --override experiment.device=cpu --out $CQ_OUTPUT_DIR/run > $CQ_OUTPUT_DIR/run.log 2>&1 && cp $(ls -d $CQ_OUTPUT_DIR/run/*/*/ | head -1)*.csv $CQ_OUTPUT_DIR/ && touch $CQ_OUTPUT_DIR/DONE"
+ ],
+ "python": "/home/sudingli/cq-home/sparsew2t/env/bin/python",
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "ed188067b5fc1abbaf2efacff1bd84f0b9db1f74"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "4",
+  "MKL_NUM_THREADS": "4",
+  "PYTHONUNBUFFERED": "1",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib"
+ },
+ "resources": {
+  "gpus": 0,
+  "cpus": 4,
+  "ram_gb": 6.0
+ },
+ "limits": {
+  "max_hours": 1.0,
+  "max_attempts": 2
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/syn_abl/ab_rule_label_eval/seed2026",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "rows.csv",
+    "min_lines": 10
+   }
+  ],
+  "progress": {
+   "path": "progress.txt",
+   "stall_min": 90
+  }
+ },
+ "workload": {
+  "bound": "cpu"
+ },
+ "depends_on": [
+  "j-1007-7d407c"
+ ]
+}
