@@ -1,10 +1,10 @@
 {
- "name": "sparsew2t data: Baostock A-shares (clean refetch to data/ashare_bs) + CSRC parse",
+ "name": "sparsew2t data: Baostock A-shares as 8 gzip parts (data/ashare_bs2) + CSRC parse",
  "work": "sparsew2t",
  "command": [
   "bash",
   "-lc",
-  "set -eo pipefail; O=$CQ_OUTPUT_DIR; echo 0/3 > $O/progress.txt; echo '[1/3] baostock'; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/fetch_ashare_bs.py --out $O --procs 4 2>&1 | grep -E --line-buffered 'universe|fetched|FAILED|rows' | tail -n 40; echo 1/3 >> $O/progress.txt; test -s $O/daily_bars.csv || { echo 'no daily_bars.csv'; exit 1; }; rm -rf $O/cache; echo '[2/3] parse CSRC'; mkdir -p $O/csrc_parsed; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/parse_csrc.py --decisions /home/sudingli/cq-home/sparsew2t/data/csrc/csrc_decisions.jsonl --universe $O/universe.csv --out $O/csrc_parsed 2>&1 | tail -n 6; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/split_csrc_sheet.py $O/csrc_parsed/csrc_sheet_auto.csv 365 2008-03-01; echo 2/3 >> $O/progress.txt; echo '[3/3] done'; echo 3/3 >> $O/progress.txt; touch $O/DONE"
+  "set -eo pipefail; O=$CQ_OUTPUT_DIR; W=$O/work; mkdir -p $W; echo 0/3 > $O/progress.txt; echo '[1/3] baostock'; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/fetch_ashare_bs.py --out $W --procs 4 2>&1 | grep -E --line-buffered 'universe|fetched|FAILED|rows' | tail -n 40; echo 1/3 >> $O/progress.txt; test -s $W/daily_bars.csv || { echo 'no daily_bars.csv'; exit 1; }; /home/sudingli/cq-home/sparsew2t/env/bin/python -c \"import pandas as pd, sys, os, zlib; d = pd.read_csv(sys.argv[1], dtype={'ticker': str}); k = d['ticker'].map(lambda t: zlib.crc32(t.encode()) % 8); [d[k == i].to_csv(os.path.join(sys.argv[2], f'daily_bars_part{i}.csv.gz'), index=False, compression='gzip') for i in range(8)]; print('rows', len(d), 'parts', 8)\" $W/daily_bars.csv $O; cp $W/universe.csv $O/; ls -la $O; echo '[2/3] parse CSRC'; mkdir -p $O/csrc_parsed; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/parse_csrc.py --decisions /home/sudingli/cq-home/sparsew2t/data/csrc/csrc_decisions.jsonl --universe $O/universe.csv --out $O/csrc_parsed 2>&1 | tail -n 6; /home/sudingli/cq-home/sparsew2t/env/bin/python scripts/data_fetch/split_csrc_sheet.py $O/csrc_parsed/csrc_sheet_auto.csv 365 2008-03-01; rm -rf $W; echo 2/3 >> $O/progress.txt; echo '[3/3] done'; echo 3/3 >> $O/progress.txt; touch $O/DONE"
  ],
  "code": {
   "git": "SuuTTT/sparsew2t",
@@ -34,13 +34,34 @@
   ]
  },
  "outputs": {
-  "dest": "/home/sudingli/cq-home/sparsew2t/data/ashare_bs",
+  "dest": "/home/sudingli/cq-home/sparsew2t/data/ashare_bs2",
   "expect": [
    {
     "path": "DONE"
    },
    {
-    "path": "daily_bars.csv"
+    "path": "daily_bars_part0.csv.gz"
+   },
+   {
+    "path": "daily_bars_part1.csv.gz"
+   },
+   {
+    "path": "daily_bars_part2.csv.gz"
+   },
+   {
+    "path": "daily_bars_part3.csv.gz"
+   },
+   {
+    "path": "daily_bars_part4.csv.gz"
+   },
+   {
+    "path": "daily_bars_part5.csv.gz"
+   },
+   {
+    "path": "daily_bars_part6.csv.gz"
+   },
+   {
+    "path": "daily_bars_part7.csv.gz"
    },
    {
     "path": "csrc_parsed/csrc_sheet_auto_tight.csv",

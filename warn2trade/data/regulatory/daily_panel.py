@@ -30,6 +30,13 @@ CHINEXT_REFORM = pd.Timestamp("2020-08-24")
 
 
 def _read(path: str) -> pd.DataFrame:
+    """One file, or a glob of parts (e.g. daily_bars_part*.csv.gz). CSV may be gzip-compressed."""
+    import glob as _glob
+    if any(ch in path for ch in "*?["):
+        parts = sorted(_glob.glob(path))
+        if not parts:
+            raise FileNotFoundError(path)
+        return pd.concat([_read(q) for q in parts], ignore_index=True)
     if path.endswith(".parquet"):
         return pd.read_parquet(path)
     return pd.read_csv(path, dtype={"ticker": str, "code": str})
@@ -63,7 +70,8 @@ class DailyBarsBuilder(BaseDatasetBuilder):
     def build_panel(self) -> Panel:
         c: Dict[str, Any] = self.cfg
         path = c["path"]
-        if not os.path.exists(path):
+        import glob as _glob
+        if not (os.path.exists(path) or _glob.glob(path)):
             raise FileNotFoundError(f"{path} not found. Export daily bars (date,ticker,open,high,low,close,volume[,amount,adj_factor,"
                                     f"suspended,is_st]) from your vendor; see docs/sparse_label_research_plan.md section 5.")
         df = _read(path).rename(columns=c.get("columns", {}) or {})

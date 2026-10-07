@@ -4,7 +4,7 @@
  "command": [
   "bash",
   "-lc",
-  "set -eo pipefail; O=$CQ_OUTPUT_DIR; ln -sfn /home/sudingli/cq-home/sparsew2t/data data; for v in tight all; do echo \"[anchors $v]\"; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/build_anchors.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml --sheet /home/sudingli/cq-home/sparsew2t/data/ashare_bs/csrc_parsed/csrc_sheet_auto_$v.csv --out $O/csrc_anchors_$v.csv 2>&1 | tail -n 16; done; echo '[power]'; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/power_check.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml --override dataset.anchors.path=$O/csrc_anchors_tight.csv 2>&1 | tail -n 30 | tee $O/power.txt; touch $O/DONE"
+  "set -eo pipefail; O=$CQ_OUTPUT_DIR; ln -sfn /home/sudingli/cq-home/sparsew2t/data data; for v in tight all; do echo \"[anchors $v]\"; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/build_anchors.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml --sheet /home/sudingli/cq-home/sparsew2t/data/ashare_bs2/csrc_parsed/csrc_sheet_auto_$v.csv --out $O/csrc_anchors_$v.csv 2>&1 | tail -n 16; done; echo '[power]'; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/power_check.py --config configs/default.yaml --dataset-config configs/datasets/csrc_pilot.yaml --override dataset.anchors.path=$O/csrc_anchors_tight.csv 2>&1 | tail -n 30 | tee $O/power.txt; touch $O/DONE"
  ],
  "code": {
   "git": "SuuTTT/sparsew2t",
