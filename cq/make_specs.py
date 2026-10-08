@@ -10,7 +10,7 @@ import argparse, glob, json, os
 HOME = "/home/sudingli/cq-home/sparsew2t"
 
 
-def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=2):
+def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=2, gpus=0, gpu_mem_gb=0):
     s = {"name": name, "work": "sparsew2t",
          "command": ["bash", "-lc", cmd],
          "python": f"{HOME}/env/bin/python",
@@ -18,11 +18,11 @@ def spec(name, cmd, commit, ram_gb, cpus, hours, dest, depends_on=None, data_gb=
          "data": [{"path": f"{HOME}/data", "gb": data_gb}],
          "home": {"name": "sparsew2t", "from": "c224"},
          "env": {"OMP_NUM_THREADS": str(cpus), "MKL_NUM_THREADS": str(cpus), "PYTHONUNBUFFERED": "1", "LD_LIBRARY_PATH": f"{HOME}/env/lib"},
-         "resources": {"gpus": 0, "cpus": cpus, "ram_gb": ram_gb},
+         "resources": ({"gpus": 1, "gpu_mem_gb": gpu_mem_gb, "cpus": cpus, "ram_gb": ram_gb} if gpus else {"gpus": 0, "cpus": cpus, "ram_gb": ram_gb}),
          "limits": {"max_hours": hours, "max_attempts": 2},
          "outputs": {"dest": dest, "expect": [{"path": "DONE"}, {"path": "rows.csv", "min_lines": 10}],
                      "progress": {"path": "progress.txt", "stall_min": 90}},
-         "workload": {"bound": "cpu"}}
+         "workload": {"bound": "compute" if gpus else "cpu"}}
     if depends_on:
         s["depends_on"] = depends_on if isinstance(depends_on, list) else [depends_on]
     return s
@@ -46,6 +46,8 @@ def main():
     ap.add_argument("--depends-on", default=None)
     ap.add_argument("--override", nargs="*", default=[]); ap.add_argument("--split-k", action="store_true", help="one job per K value")
     ap.add_argument("--data-gb", type=float, default=2)
+    ap.add_argument("--gpus", type=int, default=0); ap.add_argument("--gpu-mem-gb", type=float, default=4)
+    ap.add_argument("--only", nargs="*", default=None, help="only these <label>_seed<s> names")
     a = ap.parse_args()
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "specs", a.tag); os.makedirs(out, exist_ok=True)
     n = 0
@@ -56,8 +58,11 @@ def main():
             for kk in ([[k] for k in a.k] if a.split_k else [a.k]):
                 suf = f"_K{kk[0]}" if a.split_k else ""
                 dest = f"{HOME}/results/{a.tag}/{label}{suf}/seed{s}"
-                js = spec(f"sparsew2t {a.tag} {label}{suf} seed{s}", run_cmd(c, a.dataset_config, s, kk, a.protocols, a.override), a.commit,
-                          a.ram_gb, a.cpus, a.hours, dest, a.depends_on, a.data_gb)
+                if a.only is not None and f"{label}{suf}_seed{s}" not in a.only:
+                    continue
+                ov = list(a.override) + (["experiment.device=cuda"] if a.gpus else [])
+                js = spec(f"sparsew2t {a.tag} {label}{suf} seed{s}", run_cmd(c, a.dataset_config, s, kk, a.protocols, ov), a.commit,
+                          a.ram_gb, a.cpus, a.hours, dest, a.depends_on, a.data_gb, a.gpus, a.gpu_mem_gb)
                 if not a.dataset_config:
                     js.pop("data", None)
                 json.dump(js, open(os.path.join(out, f"{label}{suf}_seed{s}.json"), "w"), indent=1); n += 1
