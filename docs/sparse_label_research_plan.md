@@ -1,7 +1,7 @@
 # SparseWarn2Trade — research plan and paper blueprint (v0.2)
 ## Learning to detect market manipulation from the few enforcement cases that are actually published
 
-Status: v0.2, 2026-10-05, rewritten after an eight-lens CCF-A panel review of v0.1 (verdict: reject as written, borderline
+Status: v0.3 results added 2026-10-10 (section R); v0.2 plan text below unchanged; 2026-10-05, rewritten after an eight-lens CCF-A panel review of v0.1 (verdict: reject as written, borderline
 after fixes). v0.1 is superseded. Code: `warn2trade/semi/`, `warn2trade/data/{anchors,weak_labelers,semi_dataset}.py`,
 `warn2trade/data/regulatory/`, `warn2trade/backtest/{walk_forward,portfolio_eval,event_eval}.py`, `warn2trade/baselines/`,
 `configs/{default,smoke}.yaml`, `configs/{baselines,ablations,datasets}/`, `scripts/{run_experiment,power_check,build_anchors,compare_runs}.py`,
@@ -10,6 +10,45 @@ the trading harness reused here) and CausalGate (`docs/causalgate_research_plan.
 Target: KDD 2027 research track (deadline to verify on the KDD site; early February 2027 is the usual window). AAAI/IJCAI as fallback.
 
 ---
+
+## R. Results so far (v0.3, 2026-10-10; all runs via cq, project home sparsew2t, code github.com/SuuTTT/sparsew2t)
+
+Event-level metrics pooled over folds and seeds, case-bootstrap 95 % CIs, paired bootstrap for differences
+(scripts/aggregate_sweep.py). Thresholds from the validation fold; evaluation on the oracle anchor raster.
+
+**Synthetic (104 runs, 41 test cases, 4 seeds).** Event AUROC saturates (about 0.999) for every anchor-trained method;
+Deep SAD has the best event AP (0.888 at K = 1, 0.965 at K = 3) vs ours (0.727, 0.877). Weak-only 0.75, label model with causal
+LFs 0.48. The generator plants a strong pre-onset volume ramp, so this panel is a plumbing check, not evidence.
+
+**Crypto pump-and-dump, La Morgia et al. (180 runs, 277 test cases, 84 coins, hourly, 4 seeds).**
+
+| K | ours | Deep SAD | Supervised-K | FixMatch | Weak-only | ours - Deep SAD (95 % CI) |
+|---|---|---|---|---|---|---|
+| 1 | 0.849 | 0.951 | 0.896 | 0.897 | 0.716 | -0.102 (-0.119, -0.083) |
+| 3 | 0.888 | 0.932 | 0.910 | 0.909 | 0.748 | -0.044 (-0.059, -0.033) |
+| 10 | 0.875 | 0.948 | 0.953 | 0.956 | 0.695 | -0.073 (-0.087, -0.058) |
+| 30 | 0.886 | 0.957 | 0.953 | 0.954 | 0.738 | -0.071 (-0.083, -0.057) |
+| all (~79) | 0.963 | 0.967 | 0.966 | 0.968 | 0.730 | -0.004 (-0.010, 0.003) |
+
+Findings: (1) a handful of real cases beats anchor-free weak supervision by 0.13-0.23 AUROC (supported); (2) the full method is
+significantly WORSE than plain anchor-trained baselines at K <= 30 and raises 3-40x more false alarms (79-114 vs 2-38 per 1,000
+normal bars); it only ties with all cases. Suspected cause: the weak-label teacher (LFs fire on any large move, not on pumps).
+
+**CSRC pilot (auto-extracted, unverified cases; 344 tight cases, 5,408 A-shares, daily).** Power check GO: 350 pooled test cases,
+MDE 0.042 paired AUROC. Release vs naive availability halves the usable training cases (e.g. fold 9: 50 vs 102). One smoke fold
+(K = 3): event AUROC 0.935 (0.903-0.965), recall 0.63, 27 false alarms per 1,000, median lead 37 trading days. Full batch: in
+progress (32 of 144 runs done at the time of writing).
+
+**Crypto ablations:** in progress.
+
+**Consequence for the paper.** The method claim ("our anchored weak-to-semi-supervised detector beats baselines") is contradicted
+on crypto. Two routes: (A) reposition as a benchmark-and-protocol paper (enforcement-lag protocol, verified CSRC case set,
+"a few real cases beat weak supervision; semi-supervision on top does not help") for a KDD ADS or datasets-and-benchmarks track;
+(B) redesign the method after the ablations identify the harmful component, then rerun. Route A is the shorter path.
+
+**Engineering notes.** A conversion of queued runs to GPU jobs failed because the env has CPU-only PyTorch; those runs are being
+resubmitted as CPU jobs. cq did not copy some verified outputs back to the home master (j-1007-febf4c, j-1007-27a522) and never
+propagated a single 1.1 GB file; mitigated by 50x smaller score files and gzip parts.
 
 ## 0. Review response matrix (v0.1 → v0.2)
 
