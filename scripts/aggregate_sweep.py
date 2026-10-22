@@ -58,15 +58,16 @@ def main():
         ev.append({"config": cfg, "protocol": proto, "K": K, "K_eff": k_eff, "n_seeds": gs["seed"].nunique(), **event_level_summary(gs, a.n_boot)})
     ev = pd.DataFrame(ev); ev.to_csv(os.path.join(out, "event_level.csv"), index=False)
     pr = []
-    ref = scores[scores.config == a.ref]
-    for (cfg, proto, K), gb in scores[scores.config != a.ref].groupby(["config", "protocol", "K"]):
-        ga = ref[(ref.protocol == proto) & (ref.K == K)]
-        common = set(ga["seed"]) & set(gb["seed"])
-        if ga.empty or not common:
-            continue
-        ga, gb = ga[ga.seed.isin(common)], gb[gb.seed.isin(common)]
-        for m in ("event_AUROC", "event_recall"):
-            pr.append({"ref": a.ref, "other": cfg, "protocol": proto, "K": K, **paired_event_delta(ga, gb, m, a.n_boot)})
+    for rname in a.ref.split(","):                       # several references: each is paired against every other config
+        ref = scores[scores.config == rname]
+        for (cfg, proto, K), gb in scores[scores.config != rname].groupby(["config", "protocol", "K"]):
+            ga = ref[(ref.protocol == proto) & (ref.K == K)]
+            common = set(ga["seed"]) & set(gb["seed"])
+            if ga.empty or not common:
+                continue
+            ga, gb = ga[ga.seed.isin(common)], gb[gb.seed.isin(common)]
+            for m in ("event_AUROC", "event_recall"):
+                pr.append({"ref": rname, "other": cfg, "protocol": proto, "K": K, **paired_event_delta(ga, gb, m, a.n_boot)})
     pr = pd.DataFrame(pr); pr.to_csv(os.path.join(out, "paired.csv"), index=False)
     m = rows[(rows.bps == a.bps) & rows.metric.isin(["net_sr_bar", "net_n_bars", "net_skew", "net_kurt", "ovl_active_sr_bar", "ovl_active_n_bars", "ovl_active_skew", "ovl_active_kurt"])]
     key = ["config", "rule", "protocol", "K", "fold", "seed"]
@@ -81,7 +82,7 @@ def main():
                             "event_recall", "event_recall_lo", "event_recall_hi", "FA_per_1k", "lead_median"] if c in ev]
         f.write("## Event level (pooled over folds and seeds, case bootstrap 95% CI)\n\n" + ev[cols].round(3).to_markdown(index=False) + "\n\n")
         if len(pr):
-            f.write("## Paired differences vs " + a.ref + "\n\n" + pr.round(4).to_markdown(index=False) + "\n\n")
+            f.write("## Paired differences (ref = " + a.ref + ")\n\n" + pr.round(4).to_markdown(index=False) + "\n\n")
         keym = ["AP", "AUROC", "F1_val", "net_SR", "net_SR_perm_p", "ovl_IR", "ovl_IR_perm_p", "ovl_active_ARR", "PLCA_pos"]
         s2 = summ[(summ.bps == a.bps) & summ.metric.isin(keym) & summ.rule.isin(["detection", "adapter"])]
         piv = s2.pivot_table(index=["config", "protocol", "K"], columns="metric", values="mean")
