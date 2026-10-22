@@ -39,7 +39,25 @@ MDE 0.042 paired AUROC. Release vs naive availability halves the usable training
 (K = 3): event AUROC 0.935 (0.903-0.965), recall 0.63, 27 false alarms per 1,000, median lead 37 trading days. Full batch: in
 progress (32 of 144 runs done at the time of writing).
 
-**Crypto ablations:** in progress.
+**Crypto ablations (72 runs, 277 test cases, 4 seeds; 2026-10-22).** Paired against the full method (delta = full - ablation):
+
+| Removed / changed | K = 3: AUROC (delta, 95 % CI) | K = 10: AUROC (delta, 95 % CI) | FA per 1,000 at K = 10 |
+|---|---|---|---|
+| full method | 0.888 | 0.875 | 79 |
+| **no anchored label model** (majority-vote teacher) | **0.950** (-0.062, -0.076..-0.052) | **0.967** (-0.092, -0.105..-0.080) | **3.1** |
+| no consistency | 0.906 (-0.018, -0.030..-0.008) | 0.913 (-0.038, -0.051..-0.026) | 80 |
+| no trade loss | 0.881 (+0.007) | 0.903 (-0.028, -0.036..-0.020) | 108 |
+| no self-supervision | 0.879 (+0.009, n.s.) | 0.903 (-0.028, -0.044..-0.011) | 45 |
+| label-model teacher only | 0.825 (+0.063) | 0.795 (+0.081) | 149 |
+| anchors only fix the label-model sign | 0.812 (+0.076) | 0.798 (+0.078) | 163 |
+| Deep SAD (baseline, for reference) | 0.932 | 0.948 | 4.6 |
+
+The anchored label model is the harmful component: replacing its posterior with a plain majority vote of the LFs turns the method from
+the worst anchor-based method into the best at K = 3 and 10 (implied margin over Deep SAD about +0.018; a direct paired test with the
+variant as reference is running). Caveats: "no warm-up" and "no outcome weights" match the full method because the crypto dataset
+overlay sets its own training schedule and overrides those ablation settings, so those two rows do not test what their names say.
+Consequence: Theorem 1 (anchors select the label model's basin) concerns a component that hurts in practice; a method v2 without the
+anchored label model is being run on all crypto budgets and on CSRC.
 
 **Consequence for the paper.** The method claim ("our anchored weak-to-semi-supervised detector beats baselines") is contradicted
 on crypto. Two routes: (A) reposition as a benchmark-and-protocol paper (enforcement-lag protocol, verified CSRC case set,
