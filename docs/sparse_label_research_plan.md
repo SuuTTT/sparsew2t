@@ -59,6 +59,22 @@ overlay sets its own training schedule and overrides those ablation settings, so
 Consequence: Theorem 1 (anchors select the label model's basin) concerns a component that hurts in practice; a method v2 without the
 anchored label model is being run on all crypto budgets and on CSRC.
 
+**Crypto, method v2 = anchors + majority-vote LF teacher, no anchored label model (2026-10-27; 277 cases, 4 seeds).**
+
+| Event AUROC | K = 1 | K = 3 | K = 10 | K = 30 | all |
+|---|---|---|---|---|---|
+| **v2** | **0.962** | **0.950** | **0.967** | **0.967** | 0.967 |
+| Deep SAD | 0.951 | 0.932 | 0.948 | 0.957 | 0.967 |
+| Supervised-K | 0.896 | 0.910 | 0.953 | 0.953 | 0.966 |
+| v1 (full method) | 0.849 | 0.888 | 0.875 | 0.886 | 0.963 |
+| weak only (no anchors) | 0.716 | 0.748 | 0.695 | 0.738 | 0.730 |
+
+Direct paired tests, v2 minus baseline (95 % CI): Deep SAD +0.015 (0.006, 0.024) at K = 1, +0.018 (0.009, 0.024) at K = 3,
++0.019 (0.011, 0.025) at K = 10, +0.010 (0.003, 0.017) at K = 30, 0.000 (-0.006, 0.007) with all cases; Supervised-K and FixMatch
++0.011 to +0.065 at K <= 30. False alarms per 1,000 normal bars for v2: 37 (K = 1), 3.8, 3.1, 2.8 (K = 3-30), vs Deep SAD 9.4, 16.0,
+4.6, 2.5. v2 is the best detector at K <= 30, with a small but significant margin over the strongest baseline. CSRC v2 runs: rerunning
+(11 of 16 hit a 7 h limit).
+
 **Consequence for the paper.** The method claim ("our anchored weak-to-semi-supervised detector beats baselines") is contradicted
 on crypto. Two routes: (A) reposition as a benchmark-and-protocol paper (enforcement-lag protocol, verified CSRC case set,
 "a few real cases beat weak supervision; semi-supervision on top does not help") for a KDD ADS or datasets-and-benchmarks track;
