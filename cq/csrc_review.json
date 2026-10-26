@@ -1,0 +1,55 @@
+{
+ "name": "sparsew2t CSRC human review sheet (double verification)",
+ "work": "sparsew2t",
+ "command": [
+  "bash",
+  "-lc",
+  "set -eo pipefail; O=$CQ_OUTPUT_DIR; D=/home/sudingli/cq-home/sparsew2t/data; S=$D/csrc/csrc_sheet_auto_tight.csv; [ -f $S ] || S=$D/ashare_bs2/csrc_parsed/csrc_sheet_auto_tight.csv; echo sheet=$S; /home/sudingli/cq-home/sparsew2t/env/bin/python -W ignore scripts/data_fetch/csrc_review_sheet.py --sheet $S --decisions $D/csrc/csrc_decisions.jsonl --universe $D/ashare_bs/universe.csv --anchors $D/csrc_anchors/csrc_anchors_tight.csv --dataset-config configs/datasets/csrc_pilot.yaml --out $O 2>&1 | tee $O/build.log; touch $O/DONE"
+ ],
+ "code": {
+  "git": "SuuTTT/sparsew2t",
+  "commit": "COMMIT"
+ },
+ "home": {
+  "name": "sparsew2t",
+  "from": "c224"
+ },
+ "env": {
+  "OMP_NUM_THREADS": "4",
+  "LD_LIBRARY_PATH": "/home/sudingli/cq-home/sparsew2t/env/lib",
+  "PYTHONUNBUFFERED": "1"
+ },
+ "data": [
+  {
+   "path": "/home/sudingli/cq-home/sparsew2t/data",
+   "gb": 3
+  }
+ ],
+ "resources": {
+  "gpus": 0,
+  "cpus": 1,
+  "ram_gb": 8
+ },
+ "limits": {
+  "max_hours": 1,
+  "max_attempts": 2
+ },
+ "outputs": {
+  "dest": "/home/sudingli/cq-home/sparsew2t/results/csrc_review",
+  "expect": [
+   {
+    "path": "DONE"
+   },
+   {
+    "path": "review_sheet.csv",
+    "min_lines": 100
+   },
+   {
+    "path": "decisions_fulltext.txt"
+   },
+   {
+    "path": "REVIEW_GUIDE.md"
+   }
+  ]
+ }
+}
